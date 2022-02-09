@@ -7,26 +7,34 @@
 const int MAX_SIZE = 100;
 const int MAX_HISTORY = 50;
 
-char** read() {
-    char text[100];
-    char (*parameters)[100];
-    scanf("%[^\n]s", text);
+char** reads() {
+    char* text = (char *)malloc(1024 * sizeof(char));
+    char** parameters = (char **)malloc(2 * sizeof(char *));
+    
+    fgets(text, 1000, stdin);
     char* token = strtok(text, " ");
-    int i = 0;
-    while(&token[i] != "\0") {
-        parameters[0][i] = token[i];
-        i++;
+    parameters[0] = (char *)malloc(sizeof(token));
+    strcpy(parameters[0], token);
+
+    
+    token = strtok(NULL, " ");
+    int words = 1;
+    int j = 0;
+    while(token != NULL)
+    {
+        parameters = realloc(parameters, ((words+1) * sizeof(char **)));
+        parameters[words] = (char *)malloc(sizeof(token));
+        strcpy(parameters[words], token);
+
+        words++;
+        token = strtok(NULL, " ");
     }
     
-    token = strtok(NULL, "\0");
-    i = 1;
-    int j = 0;
-    while(&token[i] != "\0")
-    {
-        parameters[i][j] = token[j];
-        i++; j++;
+    for (int i = 0; i < words; i++)
+        printf("%s\n",parameters[i]);
+    for (int i = 0; i < words; i++){
+        free(parameters[i]);
     }
-    printf("%s",parameters);
     return parameters;
 }
 
