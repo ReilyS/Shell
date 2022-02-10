@@ -10,6 +10,10 @@
 const int MAX_SIZE = 100;
 const int MAX_HISTORY = 50;
 
+void add_history(char** history, char** command){
+    // printf("%ld", sizeof(command) / sizeof(*command));
+}
+
 /*
  * Description:
  *      Reads input from user, splitting each word into it's own c-string.
@@ -26,14 +30,12 @@ const int MAX_HISTORY = 50;
 char** reads(int *words) {
 
     // Allocating memory for input and return
-    char* text = (char *)malloc(512 * sizeof(char));
-    char** parameters = (char **)malloc(2 * sizeof(char *));
+    char* text = malloc(512 * sizeof(char));
+    char** parameters = malloc(2 * sizeof(char*));
 
     // Getting input from user and separating the first word into a c-string
     scanf("%[^\n]s", text);
     getchar();
-
-    // fgets(text, 1000, stdin);
     char* token = strtok(text, " ");
 
     // Allocating memory for the first word
@@ -81,28 +83,29 @@ char** reads(int *words) {
 //     }
 // }
 
-// void history(char** commands, char* parameter){
-//     if (parameter[0] == '-' && tolower(parameter[1]) == 'c' && parameter[2] == ' '){
-//         empty_history(&commands);
-//         return;
-//     }
-//     for (int i = 0; i < sizeof(commands); i++){
-//         if(commands[i] == "\0")
-//             return;
-//         else{
-//             printf("%i,. %s", i, commands[i]);
-//         }
-//     }
-// }
+void history(char** commands, char* parameter){
+    if (parameter[0] == '-' && tolower(parameter[1]) == 'c' && parameter[2] == ' ' || parameter[2] == '\0'){
+        // empty_history(&commands);
+        return;
+    }
+    for (int i = 0; i < sizeof(commands); i++){
+        if(commands[i] == NULL)
+            return;
+        else
+            printf("%i. %s", i, commands[i]);
+    }
+}
 
 int main() {
-    char* command;
+    char** command_history;
+    command_history = malloc(50 * sizeof(char*));
+    for (int i = 0; i < 50; i++)
+        command_history[i] = malloc(256 * sizeof(char));
+
+    char command[256];
+
     char** parameters;
-    char* test = "/usr/bin/ls";
-    // char command_history[MAX_HISTORY][MAX_SIZE];
-    // empty_history(command_history);
-    
-    // char *env[]={"PATH=/usr/bin/",NULL};
+
 
     while(true) {
         printf(">:");
@@ -111,29 +114,26 @@ int main() {
 
         strcpy(command, "/usr/bin/");
         strcat(command, parameters[0]);
-        // command[strlen(command)] = '\0';
 
-        if(strcasecmp("exit", parameters[0]) == 0 || strcasecmp("quit", parameters[0]) == 0) {
+        if(strcasecmp("exit", parameters[0]) == 0 || strcasecmp("quit", parameters[0]) == 0)
             return 0;
-        }
 
         // if(strcasecmp("history", command) == 0){
         //     history(&command_history, parameters);
         // }
 
-        if(fork() != 0) {
+        if(fork() != 0) 
             waitpid(-1, NULL, 0);
-        } else {
+        else 
             execvp(command, parameters);
-        }
 
-        for (int i = 0; i < words; i++){
+        for (int i = 0; i < words; i++)
             free(parameters[i]);
-        }
 
     }
     free(parameters);
-    free(command);
-    free(test);
+    for (int i = 0; i < 50; i++)
+        free(command_history[i]);
+    free(command_history);
     return 0;
 }
