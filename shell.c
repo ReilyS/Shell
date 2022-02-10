@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wait.h>
 #include <ctype.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 const int MAX_SIZE = 100;
 const int MAX_HISTORY = 50;
@@ -26,9 +29,11 @@ char** reads(int *words) {
     char* text = (char *)malloc(512 * sizeof(char));
     char** parameters = (char **)malloc(2 * sizeof(char *));
 
-
     // Getting input from user and separating the first word into a c-string
-    fgets(text, 1000, stdin);
+    scanf("%[^\n]s", text);
+    getchar();
+
+    // fgets(text, 1000, stdin);
     char* token = strtok(text, " ");
 
     // Allocating memory for the first word
@@ -58,6 +63,15 @@ char** reads(int *words) {
 
         token = strtok(NULL, " ");
     }
+
+    // Allocating memory for NULL value to end parameters
+    parameters = realloc(parameters, ((*words+1) * sizeof(char **)));
+    parameters[*words] = NULL;
+
+    // Freeing memory
+    free(text);
+    free(token);
+
     return parameters;
 }
 
@@ -82,17 +96,24 @@ char** reads(int *words) {
 // }
 
 int main() {
-    char* command[MAX_SIZE], * parameters[MAX_SIZE];
-    char command_history[MAX_HISTORY][MAX_SIZE];
-    empty_history(command_history);
+    char* command;
+    char** parameters;
+    char* test = "/usr/bin/ls";
+    // char command_history[MAX_HISTORY][MAX_SIZE];
+    // empty_history(command_history);
     
-    char *env[]={"PATH=/usr/bin/",NULL};
+    // char *env[]={"PATH=/usr/bin/",NULL};
 
     while(true) {
         printf(">:");
-        read(command, parameters);
+        int words = 0;
+        parameters = reads(&words);
 
-        if(strcasecmp("exit", command) == 0 || strcasecmp("quit", command) == 0) {
+        strcpy(command, "/usr/bin/");
+        strcat(command, parameters[0]);
+        // command[strlen(command)] = '\0';
+
+        if(strcasecmp("exit", parameters[0]) == 0 || strcasecmp("quit", parameters[0]) == 0) {
             return 0;
         }
 
@@ -103,8 +124,16 @@ int main() {
         if(fork() != 0) {
             waitpid(-1, NULL, 0);
         } else {
-            execve(command, parameters, 0);
+            execvp(command, parameters);
         }
+
+        for (int i = 0; i < words; i++){
+            free(parameters[i]);
+        }
+
     }
+    free(parameters);
+    free(command);
+    free(test);
     return 0;
 }
